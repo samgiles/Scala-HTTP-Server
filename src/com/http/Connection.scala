@@ -23,9 +23,9 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
    */
   def keepAlive(): Boolean = ((java.lang.System.currentTimeMillis() - creationTime) < com.http.config.ServerConfiguration.maxConnectionLingerTime)
   
-  val remoteAddress = socket.getRemoteSocketAddress;
+  val remoteAddress = socket.getRemoteSocketAddress
   
-  println("Accepted Connection From: " + remoteAddress)
+  com.logging.Logger.debug("Incoming connection from: " + remoteAddress);
   
   object ConnectionManager extends scala.actors.Actor {
     def act = {
