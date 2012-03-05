@@ -25,10 +25,13 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
   
   val remoteAddress = socket.getRemoteSocketAddress;
   
+  println("Accepted Connection From: " + remoteAddress)
+  
   object ConnectionManager extends scala.actors.Actor {
     def act = {
+      val sleepTime = com.http.config.ServerConfiguration.maxConnectionLingerTime;  // rather than the thread blasting itself polling the time do it only once.
       while(keepAlive){
-        Thread.sleep(1500);
+        Thread.sleep(sleepTime);
       }
       Connection.this ! ForceClose
     }
