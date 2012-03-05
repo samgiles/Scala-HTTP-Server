@@ -4,6 +4,7 @@ import scala.actors.Actor._
 
 case class ReceivedLine(line: String)
 case class SendResponse(response: String)
+case object ForceClose
 
 /**
  * A connection.
@@ -24,6 +25,14 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
   
   val remoteAddress = socket.getRemoteSocketAddress;
   
+  object ConnectionManager extends scala.actors.Actor {
+    def act = {
+      while(keepAlive){
+        Thread.sleep(1500);
+      }
+      Connection.this ! ForceClose
+    }
+  }
   
   object IncomingRequestHandler extends scala.actors.Actor {
     
@@ -31,11 +40,24 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
       if (!socket.isClosed) {
     	val istream = socket.getInputStream
       	val reader = new java.io.BufferedReader(new java.io.InputStreamReader(istream))
-      
-      	var line = reader.readLine;
+        
+    	def readLine: String = {
+    	  var line: String = null;
+    	  try {  // We could be blocked waiting for the next line when the connection is closed.
+    		  line = reader.readLine
+    	  } catch {
+    	    case e: java.net.SocketException => {
+    	      line = null
+    	    }
+    	  }
+    	  return line;
+    	}
+    	
+      	var line = readLine;
+    	
       	while(line != null && !socket.isClosed) {
     	  Connection.this ! ReceivedLine(line)
-          line = reader.readLine
+    	  line = readLine;
       	}
       }
     }
@@ -43,7 +65,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
   
   def act = {
     var close = false
-    while(keepAlive && !close) {
+    while(!close) {
       // Receive Incoming connection data
       receive {
         case requestLine: ReceivedLine => {
@@ -54,6 +76,10 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
         case sendResponse: SendResponse => {
           com.logging.Logger.debug("Sending response: " + sendResponse)
           close = true
+        }
+        
+        case ForceClose => {
+          close = true;
         }
         
         case _ => {
@@ -67,6 +93,6 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
   // Self start the actors.
   this.start
   IncomingRequestHandler.start
-  
+  ConnectionManager.start
   
 }
