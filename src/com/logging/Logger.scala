@@ -15,7 +15,7 @@ object Logger {
   
   private def write(file: java.io.File, message: String): Unit = {
     com.io.FileOps.fprint(file)(out => {
-      out.println(new java.util.Date().toString + " - " + message)
+      out.write(new java.util.Date().toString + " - " + message + "\n")
     })
   }
   

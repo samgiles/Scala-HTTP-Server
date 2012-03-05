@@ -1,13 +1,13 @@
 package com.io
 
 object FileOps {
-  def fprint(file: java.io.File)(out: java.io.PrintWriter => Unit) {
-    val printWriter = new java.io.PrintWriter(file)
+  def fprint(file: java.io.File, append: Boolean = true)(out: java.io.FileWriter => Unit) {
+    val fileWriter = new java.io.FileWriter(file, append)
     
     try {
-      out(printWriter)
+      out(fileWriter)
     } finally {
-      printWriter.close
+      fileWriter.close
     }
   }
 }
