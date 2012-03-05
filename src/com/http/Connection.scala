@@ -79,6 +79,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
         }
         
         case ForceClose => {
+          sendResponse("HTTP/1.1 404 Not Found\n\r");
           close = true;
         }
         
@@ -88,6 +89,16 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
       }
     }
     socket.close
+  }
+  
+  
+  def sendResponse(response: String): Unit = {
+    
+    val os = socket.getOutputStream
+    val out = new java.io.PrintStream(os)
+    
+    out.print(response);
+    out.close
   }
   
   // Self start the actors.
