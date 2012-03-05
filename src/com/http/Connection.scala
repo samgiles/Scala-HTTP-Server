@@ -73,8 +73,9 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
           com.logging.Logger.debug("Receieved: " + requestLine.line)
         }
         
-        case sendResponse: SendResponse => {
-          com.logging.Logger.debug("Sending response: " + sendResponse)
+        case respond: SendResponse => {
+          com.logging.Logger.debug("Sending response: " + respond.response)
+          sendResponse(respond.response)
           close = true
         }
         
