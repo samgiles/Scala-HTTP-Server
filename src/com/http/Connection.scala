@@ -28,7 +28,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
   
   com.logging.Logger.debug("Incoming connection from: " + remoteAddress);
   
-  object ConnectionManager extends scala.actors.Actor {
+  private object ConnectionManager extends scala.actors.Actor {
     def act = {
       val sleepTime = com.http.config.ServerConfiguration.maxConnectionLingerTime;  // rather than the thread blasting itself polling the time do it only once.
       while(keepAlive){
@@ -38,7 +38,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
     }
   }
   
-  object IncomingRequestHandler extends scala.actors.Actor {
+  private object IncomingRequestHandler extends scala.actors.Actor {
     
     def act = {
       if (!socket.isClosed) {
