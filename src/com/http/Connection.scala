@@ -1,6 +1,7 @@
 package com.http
 
 import scala.actors.Actor._
+import com.http.fieldparsers._
 
 case class ReceivedLine(line: String)
 case class SendResponse(response: String)
@@ -74,6 +75,14 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
         case requestLine: ReceivedLine => {
           // We Received a line from the client!
           com.logging.Logger.debug("Receieved: " + requestLine.line)
+          RequestFieldParser(requestLine.line) match {
+            case request: RequestLine => {
+             
+            }
+            case _ => {
+              
+            }
+          }
         }
         
         case respond: SendResponse => {
