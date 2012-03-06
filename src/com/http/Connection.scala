@@ -75,14 +75,6 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
         case requestLine: ReceivedLine => {
           // We Received a line from the client!
           com.logging.Logger.debug("Receieved: " + requestLine.line)
-          RequestFieldParser(requestLine.line) match {
-            case request: RequestLine => {
-             
-            }
-            case _ => {
-              
-            }
-          }
         }
         
         case respond: SendResponse => {
