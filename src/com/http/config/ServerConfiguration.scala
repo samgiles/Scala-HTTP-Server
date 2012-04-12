@@ -6,6 +6,6 @@ package com.http.config
  */
 object ServerConfiguration {
   
-  val maxConnectionLingerTime = 10 * (1000); // Connection linger time in milliseconds.
+  val maxConnectionLingerTime = 5 * (1000); // Connection linger time in milliseconds.
   
 }

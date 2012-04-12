@@ -2,6 +2,7 @@ package com.http
 
 import scala.actors.Actor._
 import com.http.fieldparsers._
+import scala.collection.immutable.Queue
 
 case class ReceivedLine(line: String)
 case class SendResponse(response: String)
@@ -18,6 +19,8 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
    * The time the connection was created.
    */
   val creationTime = java.lang.System.currentTimeMillis();
+  
+  var requestQueue: Queue[ReceivedLine] = Queue();
   
   /**
    * Performs a check to see whether this connection has been open for too long.
@@ -67,6 +70,48 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
     }
   }
   
+  private object RequestProcessor extends scala.actors.Actor {
+    def act = {
+      while (!socket.isClosed) {
+        if (requestQueue.length > 0) {
+	        var (requestLine, q) = requestQueue.dequeue;
+	        requestQueue = q;
+	
+	        val topline = RequestFieldParser(requestLine.line);
+	        
+	        if (topline == null) {
+	          val string = requestLine.line.split(":");
+	          
+	          if (string.length == 0) {
+	            
+	          } else {
+	        	  string(0) match {
+	            	case "Host" => {}
+	            	case "Accept" => {}
+	            	case "Accept-Language" => {}
+	            	case "Accept-Encoding" => {}
+	            	case "Connection" => {}
+	            		case _ => {}
+	          		}
+	          	}
+	          
+	        } else {
+	        	val request: RequestLine = topline.asInstanceOf[RequestLine];
+	        	var response = 	"HTTP/1.1 200 OK\n" +
+	        					"Content-Length: 88\n" + 
+	        					"Connection: close\n" +
+	        					"Content-Type: text/html; charset=iso-8859-1\n\n" +
+	        					"<html><head><title>Hello!</title></head><body><h1>It Works!</h1></body></html>\n";
+
+	        	
+	        	
+	        	Connection.this ! SendResponse(response); // \n"	
+	        }
+        }
+      }
+    }
+  }
+  
   def act = {
     var close = false
     while(!close) {
@@ -74,17 +119,16 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
       receive {
         case requestLine: ReceivedLine => {
           // We Received a line from the client!
-          com.logging.Logger.debug("Receieved: " + requestLine.line)
+          com.logging.Logger.debug("Receieved: " + requestLine.line);
+          requestQueue = requestQueue.enqueue(requestLine);
         }
         
         case respond: SendResponse => {
           com.logging.Logger.debug("Sending response: " + respond.response)
           sendResponse(respond.response)
-          close = true
         }
         
         case ForceClose => {
-          sendResponse("HTTP/1.1 404 Not Found\n\r");
           close = true;
         }
         
@@ -102,13 +146,13 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
     val os = socket.getOutputStream
     val out = new java.io.PrintStream(os)
     
-    out.print(response);
-    out.close
+    out.println(response);
+    out.flush();
   }
   
   // Self start the actors.
   this.start
   IncomingRequestHandler.start
   ConnectionManager.start
-  
+  RequestProcessor.start
 }
