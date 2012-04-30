@@ -79,23 +79,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
 	
 	        val topline = RequestFieldParser(requestLine.line);
 	        
-	        if (topline == null) {
-	          val string = requestLine.line.split(":");
-	          
-	          if (string.length == 0) {
-	            
-	          } else {
-	        	  string(0) match {
-	            	case "Host" => {}
-	            	case "Accept" => {}
-	            	case "Accept-Language" => {}
-	            	case "Accept-Encoding" => {}
-	            	case "Connection" => {}
-	            		case _ => {}
-	          		}
-	          	}
-	          
-	        } else {
+	        if (topline != null) {      
 	        	val request: RequestLine = topline.asInstanceOf[RequestLine];
 	        	var response = 	"HTTP/1.1 200 OK\n" +
 	        					"Content-Length: 88\n" + 
