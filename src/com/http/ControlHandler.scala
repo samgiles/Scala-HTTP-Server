@@ -18,7 +18,7 @@ class ControlHandler(listener: Actor) extends Actor {
 	        running = false;
 	      }
 	      case "help" => {
-	        System.out.println("Not Yet Implemented... Sorry");
+	        System.out.println("'terminate'  Shuts down the HTTP Server\n'help'  Displays this help message");
 	      }
 	      case _ => {
 	        System.out.println("Unknown command: " + string + ".  Use 'help' command for list of commands");
