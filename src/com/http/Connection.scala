@@ -37,6 +37,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
       while(keepAlive){
         Thread.sleep(sleepTime);
       }
+      com.logging.Logger.debug("Closing connection from: " + remoteAddress);
       Connection.this ! ForceClose
     }
   }
@@ -81,15 +82,35 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
 	        
 	        if (topline != null) {      
 	        	val request: RequestLine = topline.asInstanceOf[RequestLine];
-	        	var response = 	"HTTP/1.1 200 OK\n" +
-	        					"Content-Length: 88\n" + 
-	        					"Connection: close\n" +
-	        					"Content-Type: text/html; charset=iso-8859-1\n\n" +
-	        					"<html><head><title>Hello!</title></head><body><h1>It Works!</h1></body></html>\n";
-
 	        	
+	        	var requestFile = request.uri.drop(1);
 	        	
-	        	Connection.this ! SendResponse(response); // \n"	
+	        	if (requestFile.length() == 0) {
+	        	 requestFile = "index.html"; 
+	        	}
+	        	
+	        	val file = new java.io.File(requestFile);
+	        	
+	        	var response = "";
+	        	
+	        	if (!file.exists()) {
+	        		
+	        		response = 	"HTTP/1.1 404 Not Found\n" +
+	        						"Content-Length: 88\n" + 
+	        						"Connection: close\n" +
+	        						"Content-Type: text/html; charset=iso-8859-1\n\n" +
+	        						"<html><head><title>Hello!</title></head><body><h1>404</h1><h3>Not found!</h3></body></html>\n";
+	        	} else {
+	        	
+	        		val buffer = com.io.FileOps.fread(file);
+	        		response = "HTTP/1.1 200 OK\n" +
+	        				   "Content-Length: " + file.length() + "\n" +
+	        				   "Content-Type: text/html; charset=iso-8859-1\n" +
+	        				   "Connection: close\n\n" +
+	        				   buffer.toString();
+	        	}
+	        	
+	        	Connection.this ! SendResponse(response);
 	        }
         }
       }

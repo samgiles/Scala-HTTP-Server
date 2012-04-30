@@ -10,4 +10,17 @@ object FileOps {
       fileWriter.close
     }
   }
+  
+  def fread(file: java.io.File): java.nio.Buffer = {
+    val fileReader = new java.io.FileReader(file);
+
+    val out = java.nio.CharBuffer.allocate(file.length().toInt);
+    try {
+      fileReader.read(out)
+    } finally {
+      fileReader.close();
+    }
+    out.rewind();
+    return out;
+  }
 }
