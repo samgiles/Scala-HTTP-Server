@@ -24,6 +24,7 @@ class HTTPServer(val port: Int) extends Actor {
 	  System.exit(0);
 	}
 	
+	// set up the console handling
 	val controlHandler = new ControlHandler(this);
 	
 	def run(): Unit = {

@@ -1,6 +1,9 @@
 package com.http
 import scala.actors.Actor
 
+/**
+ * Handles command line inputs into the server console.
+ */
 class ControlHandler(listener: Actor) extends Actor {
 	var running = true;
 	
