@@ -5,7 +5,7 @@ import com.http.fieldparsers._
 import scala.collection.immutable.Queue
 
 case class ReceivedLine(line: String)
-case class SendResponse(response: String)
+case class SendResponse(response: Array[Byte])
 case object ForceClose
 
 /**
@@ -92,6 +92,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
 	        	val file = new java.io.File(requestFile);
 	        	
 	        	var response = "";
+	        	var bytes : Array[Byte] = null;
 	        	
 	        	if (!file.exists()) {
 	        		
@@ -100,17 +101,20 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
 	        						"Connection: close\n" +
 	        						"Content-Type: text/html; charset=iso-8859-1\n\n" +
 	        						"<html><head><title>Hello!</title></head><body><h1>404</h1><h3>Not found!</h3></body></html>\n";
+	        		bytes = response.getBytes();
 	        	} else {
 	        	
-	        		val buffer = com.io.FileOps.fread(file);
+	        		val buffer = com.io.FileOps.getFileContents(file);
 	        		response = "HTTP/1.1 200 OK\n" +
-	        				   "Content-Length: " + file.length() + "\n" +
-	        				   "Content-Type: text/html; charset=iso-8859-1\n" +
-	        				   "Connection: close\n\n" +
-	        				   buffer.toString();
+	        				   "Content-Length: " + buffer.length + "\n" +
+	        				   "Content-Type: " + com.http.config.MimeTypes.types(com.io.FileOps.getExtension(file)) + "\n" +
+	        				   "Connection: close\n\n";
+	        		
+	        		val respBytes = response.getBytes();
+	        		bytes = respBytes ++ buffer;
 	        	}
 	        	
-	        	Connection.this ! SendResponse(response);
+	        	Connection.this ! SendResponse(bytes);
 	        }
         }
       }
@@ -146,12 +150,11 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
   }
   
   
-  def sendResponse(response: String): Unit = {
+  def sendResponse(response: Array[Byte]): Unit = {
     
     val os = socket.getOutputStream
     val out = new java.io.PrintStream(os)
-    
-    out.println(response);
+    out.write(response)
     out.flush();
   }
   
