@@ -8,7 +8,13 @@ object Logger {
   val errorFile = "errors.xml"
   val debugFile = new java.io.File("debug_log.log")
   
+  val file = new java.io.File(errorFile);
+  
   var errorLog = <Log></Log>;
+  
+  if (file.exists()) {
+     errorLog = XML.loadFile(file)
+  }
   
   
   def getLogEntry(error: String, errorType: String, details: String, stackTrace: Array[java.lang.StackTraceElement] = null): Node = {
@@ -33,13 +39,13 @@ object Logger {
     	   </LogItem>
   }
   
-  def error(error: String, description: String, includeStackTrace: Boolean): Unit = {
+  def error(error: String, description: String, includeStackTrace: Boolean, errType: String): Unit = {
     var stackTrace: Array[java.lang.StackTraceElement] = null;
     if (includeStackTrace) {
       stackTrace = Thread.currentThread().getStackTrace();
     }
    
-    errorLog = addErrorItem(getLogEntry(error,"ERROR",description, stackTrace));
+    errorLog = addErrorItem(getLogEntry(error,errType,description, stackTrace));
   }
   
   def addErrorItem(newChild: Node): Elem = {

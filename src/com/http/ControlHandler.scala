@@ -6,7 +6,7 @@ import scala.actors.Actor
  */
 class ControlHandler(listener: Actor) extends Actor {
 	var running = true;
-	
+	val errorCommand = """errors ([a-zA-Z]*)""".r
 	def act = {
 	  val scanner: java.util.Scanner = new java.util.Scanner(System.in);
 	  
@@ -21,11 +21,13 @@ class ControlHandler(listener: Actor) extends Actor {
 	        running = false;
 	      }
 	      case "help" => {
-	        System.out.println("'errors' outputs the Error Logs and opens the log viewer\n'terminate'  Shuts down the HTTP Server\n'help'  Displays this help message");
+	        System.out.println("'errors <type>' outputs the Error Logs file and displays errors of the specified type\n'terminate'  Shuts down the HTTP Server\n'help'  Displays this help message");
 	      }
-	      case "errors" => {
-	        System.out.println("Preparing error logs, in a few moments the error view will open..\n");
+	      case errorCommand(tagName) => {
+	        System.out.println("Preparing error logs for type: " + tagName);
 	        com.logging.Logger.outputErrorLog();
+	        val viewer = new com.logging.viewer.LogViewer(tagName);
+	        viewer.outputItems();
 	      }
 	      case _ => {
 	        System.out.println("Unknown command: " + string + ".  Use 'help' command for list of commands");

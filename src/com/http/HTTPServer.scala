@@ -39,7 +39,7 @@ class HTTPServer(val port: Int) extends Actor {
 	    	val handler = new Connection(connection);
 	    } catch {
 	      case e: Exception => {
-	         com.logging.Logger.error("Unhandled Exception", "An unhandled exception occured: " + e.getLocalizedMessage(), true);
+	         com.logging.Logger.error("Unhandled Exception", "An unhandled exception occured: " + e.getLocalizedMessage(), true, "ERROR");
 	      }
 	    }
 	  }

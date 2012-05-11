@@ -90,7 +90,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
       }
       } catch {
 	      case e: Exception => {
-	         com.logging.Logger.error("Unhandled Exception", "An unhandled exception occured: " + e.getLocalizedMessage(), true);
+	         com.logging.Logger.error("Unhandled Exception", "An unhandled exception occured: " + e.getLocalizedMessage(), true, "ERROR");
 	      }
 	    }
     }
@@ -157,7 +157,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
       }
       } catch {
 	      case e: Exception => {
-	         com.logging.Logger.error("Unhandled Exception", "An unhandled exception occured: " + e.getLocalizedMessage(), true);
+	         com.logging.Logger.error("Unhandled Exception", "An unhandled exception occured: " + e.getLocalizedMessage(), true, "ERROR");
 	      }
 	    }
     }
@@ -186,14 +186,14 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
         }
         
         case _ => {
-          com.logging.Logger.error("Incorrect Actor message received in Connection.", "An invalid message was received", true);
+          com.logging.Logger.error("Incorrect Actor message received in Connection.", "An invalid message was received", true, "SEVERE");
         }
       }
     }
     socket.close
     } catch {
 	      case e: Exception => {
-	         com.logging.Logger.error("Unhandled Exception", "An unhandled exception occured: " + e.getLocalizedMessage(), true);
+	         com.logging.Logger.error("Unhandled Exception", "An unhandled exception occured: " + e.getLocalizedMessage(), true, "ERROR");
 	      }
 	    }
   }
