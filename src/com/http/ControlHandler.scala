@@ -21,7 +21,11 @@ class ControlHandler(listener: Actor) extends Actor {
 	        running = false;
 	      }
 	      case "help" => {
-	        System.out.println("'terminate'  Shuts down the HTTP Server\n'help'  Displays this help message");
+	        System.out.println("'errors' outputs the Error Logs and opens the log viewer\n'terminate'  Shuts down the HTTP Server\n'help'  Displays this help message");
+	      }
+	      case "errors" => {
+	        System.out.println("Preparing error logs, in a few moments the error view will open..\n");
+	        com.logging.Logger.outputErrorLog();
 	      }
 	      case _ => {
 	        System.out.println("Unknown command: " + string + ".  Use 'help' command for list of commands");

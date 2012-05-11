@@ -34,9 +34,14 @@ class HTTPServer(val port: Int) extends Actor {
 	  val sock: ServerSocket = new ServerSocket(port);
 	  
 	  while(running) {
-	    val connection = sock.accept();
-	    val handler = new Connection(connection);
-	    handler.start;
+	    try {
+	    	val connection = sock.accept();
+	    	val handler = new Connection(connection);
+	    } catch {
+	      case e: Exception => {
+	         com.logging.Logger.error("Unhandled Exception", "An unhandled exception occured: " + e.getLocalizedMessage(), true);
+	      }
+	    }
 	  }
 	  
 	}

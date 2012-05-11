@@ -1,16 +1,58 @@
 package com.logging
+import scala.xml.Node
+import scala.xml.XML
+import scala.xml.Elem
 
 object Logger {
   
-  val errorFile = new java.io.File("error_log.log")
+  val errorFile = "errors.xml"
   val debugFile = new java.io.File("debug_log.log")
   
-  def error(error: String): Unit = {
-    write(errorFile, error)
+  var errorLog = <Log></Log>;
+  
+  
+  def getLogEntry(error: String, errorType: String, details: String, stackTrace: Array[java.lang.StackTraceElement] = null): Node = {
+    return <LogItem>
+    			<Name>{ error }</Name>
+    			<Type>{ errorType }</Type>
+    			<Details>{ details }</Details>
+    			<StackTrace>
+    			{
+    			  if (stackTrace != null && stackTrace.length  > 0) {
+    			    
+    			    for (traceElem <- stackTrace) yield
+    			    <TraceElem>
+    			    	<Classname>{ traceElem.getClassName() }</Classname>
+    			    	<Methodname>{ traceElem.getMethodName() }</Methodname>
+    			    	<LineNumber>{ traceElem.getLineNumber() }</LineNumber>
+    			    	<FileName>{ traceElem.getFileName() }</FileName>
+    			    </TraceElem>
+    			  }
+    			}
+    			</StackTrace>
+    	   </LogItem>
   }
   
-  def debug(debug: String): Unit = {
+  def error(error: String, description: String, includeStackTrace: Boolean): Unit = {
+    var stackTrace: Array[java.lang.StackTraceElement] = null;
+    if (includeStackTrace) {
+      stackTrace = Thread.currentThread().getStackTrace();
+    }
+   
+    errorLog = addErrorItem(getLogEntry(error,"ERROR",description, stackTrace));
+  }
+  
+  def addErrorItem(newChild: Node): Elem = {
+    	return Elem(errorLog.prefix, errorLog.label, errorLog.attributes, errorLog.scope, errorLog.child ++ newChild : _*)
+  }
+
+  
+  def debug(debug: String, description: String): Unit = {
     write(debugFile, debug)
+  }
+  
+  def outputErrorLog(): Unit = {
+    XML.saveFull(errorFile, errorLog, "UTF-8", true, null);
   }
   
   private def write(file: java.io.File, message: String): Unit = {

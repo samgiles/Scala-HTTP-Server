@@ -38,7 +38,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
   /**
    * Log that a connection was received.
    */
-  com.logging.Logger.debug("Incoming connection from: " + remoteAddress);
+  com.logging.Logger.debug("Incoming connection from: " + remoteAddress, "");
   
   /**
    * The connection manager object, the Connection manager manages the length of the connection, this prevents a connection from remaining open for a very long time.
@@ -52,7 +52,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
         Thread.sleep(sleepTime);
       } while(keepAlive);
       // Log the connection closing.
-      com.logging.Logger.debug("Closing connection from: " + remoteAddress);
+      com.logging.Logger.debug("Closing connection from: " + remoteAddress, "");
       // Send a ForceClose message to the main connection object which will forcefully close the connection.
       Connection.this ! ForceClose
     }
@@ -63,6 +63,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
    */
   private object IncomingRequestHandler extends scala.actors.Actor {
     def act = {
+      try {
       if (!socket.isClosed) {
     	val istream = socket.getInputStream
       	val reader = new java.io.BufferedReader(new java.io.InputStreamReader(istream))
@@ -87,6 +88,11 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
     	  line = readLine;
       	}
       }
+      } catch {
+	      case e: Exception => {
+	         com.logging.Logger.error("Unhandled Exception", "An unhandled exception occured: " + e.getLocalizedMessage(), true);
+	      }
+	    }
     }
   }
   
@@ -95,6 +101,7 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
    */
   private object RequestProcessor extends scala.actors.Actor {
     def act = {
+      try {
       // While connection is not closed
       while (!socket.isClosed) {
         // if the request queue is not empty
@@ -143,15 +150,21 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
 	        		val respBytes = response.getBytes();
 	        		bytes = respBytes ++ buffer;
 	        	}
-	        	// send the response back.
+
 	        	Connection.this ! SendResponse(bytes);
 	        }
         }
       }
+      } catch {
+	      case e: Exception => {
+	         com.logging.Logger.error("Unhandled Exception", "An unhandled exception occured: " + e.getLocalizedMessage(), true);
+	      }
+	    }
     }
   }
   
   def act = {
+    try {
     var close = false
     while(!close) {
       // Receive Incoming connection data
@@ -159,13 +172,11 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
         // as a line is receieved from the connection queue it in the requestQueue.
         case requestLine: ReceivedLine => {
           // We Received a line from the client!
-          com.logging.Logger.debug("Receieved: " + requestLine.line);
           requestQueue = requestQueue.enqueue(requestLine);
         }
         
         // send a response back
         case respond: SendResponse => {
-          com.logging.Logger.debug("Sending response: " + respond.response)
           sendResponse(respond.response)
         }
         
@@ -175,11 +186,16 @@ class Connection(socket: java.net.Socket) extends scala.actors.Actor {
         }
         
         case _ => {
-          com.logging.Logger.debug("Incorrect case message receieved in Connection Actor receive block.")
+          com.logging.Logger.error("Incorrect Actor message received in Connection.", "An invalid message was received", true);
         }
       }
     }
     socket.close
+    } catch {
+	      case e: Exception => {
+	         com.logging.Logger.error("Unhandled Exception", "An unhandled exception occured: " + e.getLocalizedMessage(), true);
+	      }
+	    }
   }
   
   /**
